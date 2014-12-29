@@ -110,18 +110,28 @@ function Tetrad() {
         }
     };
     this.rotateRight = function() {
-        var temp = 0;
-        /*
-        [A - - B]
-        [- - - -]
-        [- - - -]
-        [D - - C]
-        */
-        temp = this.matrix[3][0]; // save D
-        this.matrix[3][0] = this.matrix[3][3]; // D < C
-        this.matrix[3][3] = this.matrix[0][3]; // C < B
-        this.matrix[0][3] = this.matrix[0][0]; // B < A
-        this.matrix[0][0] = temp; // A < D
+        // rotate outer layer
+        for (var i = 0; i < 3; i++) {
+            // save top row
+            var temp = this.matrix[0][i];
+            // left column to top row
+            this.matrix[0][i] = this.matrix[3-i][0];
+            // bottom row to left column
+            this.matrix[3-i][0] = this.matrix[3][3-i];
+            // right column to bottom row
+            this.matrix[3][3-i] = this.matrix[i][3];
+            // top row (temp) to right columm
+            this.matrix[i][3] = temp;
+        }
+        // rotate inner layer
+        var innerTemp = this.matrix[1][1];
+        this.matrix[1][1] = this.matrix[2][1];
+        this.matrix[2][1] = this.matrix[2][2];
+        this.matrix[2][2] = this.matrix[1][2];
+        this.matrix[1][2] = innerTemp;
+    };
+    this.rotateLeft = function() {
+        for (var i = 0; i < 3; i++) this.rotateRight();
     };
 }
 
