@@ -129,6 +129,11 @@ function Tetrad() {
         this.matrix[2][1] = this.matrix[2][2];
         this.matrix[2][2] = this.matrix[1][2];
         this.matrix[1][2] = innerTemp;
+        // fill bottom rows
+        while (_.isEqual(this.matrix[3],[0,0,0,0])) {
+            for (var i = 2; i >= 0; i--) this.matrix[i+1] = this.matrix[i];
+            this.matrix[0] = [0,0,0,0];
+        }
     };
     this.rotateLeft = function() {
         for (var i = 0; i < 3; i++) this.rotateRight();
