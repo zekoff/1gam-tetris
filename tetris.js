@@ -237,7 +237,7 @@ function processTick() {
         if (_.isEqual(filledRow, Tetris.field[row])) {
             Tetris.tickLength -= 1;
             for (var i = row; i > 0; i--) {
-                Tetris.field[i] = Tetris.field[i - 1];
+                Tetris.field[i] = _.cloneDeep(Tetris.field[i - 1]);
             }
             Tetris.field[0] = emptyRow;
         }
