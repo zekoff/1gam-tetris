@@ -10,6 +10,7 @@ Tetris.tickLength = 990; // milliseconds
 Tetris.field = [];
 Tetris.counter = 0; // milliseconds
 Tetris.renderBlocks = [];
+
 var game = new Phaser.Game(Tetris.COLUMNS * Tetris.TILE_SIZE,
     Tetris.ROWS * Tetris.TILE_SIZE, Phaser.AUTO, '', {
         preload: preload,
@@ -29,6 +30,7 @@ function create() {
         Tetris.field.push(row);
     }
     Tetris.activeTetrad = new Tetrad().createRandom();
+    Tetris.nextTetrad = new Tetrad().createRandom();
     var leftKey = game.input.keyboard.addKey(Phaser.Keyboard.LEFT);
     leftKey.onDown.add(function() {
         var copy = Tetris.activeTetrad.clone();
@@ -88,7 +90,8 @@ function processTick() {
             for (var col = 0; col < 4; col++)
                 if (Tetris.activeTetrad.x + col < 10 && Tetris.activeTetrad.matrix[row][col])
                     Tetris.field[row + Tetris.activeTetrad.y][col + Tetris.activeTetrad.x] = 1;
-        Tetris.activeTetrad = new Tetrad().createRandom();
+        Tetris.activeTetrad = Tetris.nextTetrad;
+        Tetris.nextTetrad = new Tetrad().createRandom();
     }
     var filledRow = [];
     var emptyRow = [];
