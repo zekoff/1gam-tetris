@@ -4,6 +4,7 @@ var Tetris = Tetris || {};
 Tetris.Tetrad = function() {
     this.x = 0;
     this.y = 0;
+    this.block = 'block' + _.random(1,5);
     this.createRandom = function() {
         this.matrix = []; // 2D matrix, access by [row][column]
         for (var i = 0; i < 4; i++) this.matrix.push([0, 0, 0, 0]);

@@ -5,7 +5,7 @@ var Tetrad = Tetris.Tetrad;
 
 Tetris.COLUMNS = 10;
 Tetris.ROWS = 18;
-Tetris.TILE_SIZE = 33; // pixels square
+Tetris.TILE_SIZE = 32; // pixels square
 Tetris.tickLength = 990; // milliseconds
 Tetris.field = [];
 Tetris.counter = 0; // milliseconds
@@ -16,11 +16,17 @@ var game = new Phaser.Game(Tetris.COLUMNS * Tetris.TILE_SIZE + 4 * Tetris.TILE_S
         preload: preload,
         create: create,
         update: update
-    }, true);
+    }, true, false);
 
 function preload() {
     game.load.image('block', 'block.png');
     game.load.image('block_next', 'block_white.png');
+    game.load.image('block1', 'blocks/block1.png');
+    game.load.image('block2', 'blocks/block2.png');
+    game.load.image('block3', 'blocks/block3.png');
+    game.load.image('block4', 'blocks/block4.png');
+    game.load.image('block5', 'blocks/block5.png');
+    game.load.image('block7', 'blocks/block7.png');
 }
 
 function create() {
@@ -73,16 +79,20 @@ function render() {
     for (var row = 0; row < 4; row++)
         for (var col = 0; col < 4; col++)
             if (Tetris.activeTetrad.matrix[row][col])
-                Tetris.renderBlocks.push(game.add.image((col + Tetris.activeTetrad.x) * Tetris.TILE_SIZE + 5, (row + Tetris.activeTetrad.y) * Tetris.TILE_SIZE, 'block'));
+                Tetris.renderBlocks.push(game.add.image((col + Tetris.activeTetrad.x) * Tetris.TILE_SIZE + 5, (row + Tetris.activeTetrad.y) * Tetris.TILE_SIZE, Tetris.activeTetrad.block));
     for (var fieldRow = 0; fieldRow < Tetris.ROWS; fieldRow++)
         for (var fieldCol = 0; fieldCol < Tetris.COLUMNS; fieldCol++)
             if (Tetris.field[fieldRow][fieldCol])
-                Tetris.renderBlocks.push(game.add.image(fieldCol * Tetris.TILE_SIZE + 5, fieldRow * Tetris.TILE_SIZE, 'block'));
+                Tetris.renderBlocks.push(game.add.image(fieldCol * Tetris.TILE_SIZE + 5, fieldRow * Tetris.TILE_SIZE, 'block7'));
     var offset = Tetris.COLUMNS * Tetris.TILE_SIZE + 15;
     for (var nextRow = 0; nextRow < 4; nextRow++)
         for (var nextCol = 0; nextCol < 4; nextCol++)
             if (Tetris.nextTetrad.matrix[nextRow][nextCol])
-                Tetris.renderBlocks.push(game.add.image(offset + Tetris.TILE_SIZE * nextCol, Tetris.TILE_SIZE * nextRow + 5, 'block_next'));
+                Tetris.renderBlocks.push(game.add.image(offset + Tetris.TILE_SIZE * nextCol, Tetris.TILE_SIZE * nextRow + 5, Tetris.nextTetrad.block));
+    Tetris.renderBlocks.forEach(function(e){
+        e.scale.x=4;
+        e.scale.y=4;
+    });
 }
 
 function processTick() {
@@ -105,22 +115,20 @@ function processTick() {
         filledRow.push(1);
         emptyRow.push(0);
     });
-    for (var row = 0; row < Tetris.ROWS; row++) {
+    for (var row = 0; row < Tetris.ROWS; row++)
         if (_.isEqual(filledRow, Tetris.field[row])) {
             Tetris.tickLength -= 1;
-            for (var i = row; i > 0; i--) {
+            for (var i = row; i > 0; i--)
                 Tetris.field[i] = _.cloneDeep(Tetris.field[i - 1]);
-            }
             Tetris.field[0] = emptyRow;
         }
-    }
 }
 
 function checkCollision(testTetrad) {
     if (testTetrad.x < 0 || testTetrad.x >= Tetris.COLUMNS) return true;
     if (testTetrad.y + 3 >= Tetris.ROWS) return true;
-    for (var row = 0; row < 4; row++) {
-        for (var col = 0; col < 4; col++) {
+    for (var row = 0; row < 4; row++)
+        for (var col = 0; col < 4; col++)
             if (testTetrad.matrix[row][col] &&
                 (
                     Tetris.field[row + testTetrad.y][col + testTetrad.x] ||
@@ -128,7 +136,5 @@ function checkCollision(testTetrad) {
                 )
             )
                 return true;
-        }
-    }
     return false;
 }
