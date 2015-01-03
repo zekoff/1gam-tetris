@@ -11,7 +11,7 @@ Tetris.field = [];
 Tetris.counter = 0; // milliseconds
 Tetris.renderBlocks = [];
 
-var game = new Phaser.Game(Tetris.COLUMNS * Tetris.TILE_SIZE,
+var game = new Phaser.Game(Tetris.COLUMNS * Tetris.TILE_SIZE + 4 * Tetris.TILE_SIZE + 5 + 5 + 5,
     Tetris.ROWS * Tetris.TILE_SIZE, Phaser.AUTO, '', {
         preload: preload,
         create: create,
@@ -20,6 +20,7 @@ var game = new Phaser.Game(Tetris.COLUMNS * Tetris.TILE_SIZE,
 
 function preload() {
     game.load.image('block', 'block.png');
+    game.load.image('block_next', 'block_white.png');
 }
 
 function create() {
@@ -72,11 +73,16 @@ function render() {
     for (var row = 0; row < 4; row++)
         for (var col = 0; col < 4; col++)
             if (Tetris.activeTetrad.matrix[row][col])
-                Tetris.renderBlocks.push(game.add.image((col + Tetris.activeTetrad.x) * Tetris.TILE_SIZE, (row + Tetris.activeTetrad.y) * Tetris.TILE_SIZE, 'block'));
+                Tetris.renderBlocks.push(game.add.image((col + Tetris.activeTetrad.x) * Tetris.TILE_SIZE + 5, (row + Tetris.activeTetrad.y) * Tetris.TILE_SIZE, 'block'));
     for (var fieldRow = 0; fieldRow < Tetris.ROWS; fieldRow++)
         for (var fieldCol = 0; fieldCol < Tetris.COLUMNS; fieldCol++)
             if (Tetris.field[fieldRow][fieldCol])
-                Tetris.renderBlocks.push(game.add.image(fieldCol * Tetris.TILE_SIZE, fieldRow * Tetris.TILE_SIZE, 'block'));
+                Tetris.renderBlocks.push(game.add.image(fieldCol * Tetris.TILE_SIZE + 5, fieldRow * Tetris.TILE_SIZE, 'block'));
+    var offset = Tetris.COLUMNS * Tetris.TILE_SIZE + 15;
+    for (var nextRow = 0; nextRow < 4; nextRow++)
+        for (var nextCol = 0; nextCol < 4; nextCol++)
+            if (Tetris.nextTetrad.matrix[nextRow][nextCol])
+                Tetris.renderBlocks.push(game.add.image(offset + Tetris.TILE_SIZE * nextCol, Tetris.TILE_SIZE * nextRow + 5, 'block_next'));
 }
 
 function processTick() {
