@@ -145,7 +145,7 @@ function Tetrad() {
 Tetris.COLUMNS = 10;
 Tetris.ROWS = 18;
 Tetris.TILE_SIZE = 33; // pixels square
-Tetris.tickLength = 1000; // milliseconds
+Tetris.tickLength = 990; // milliseconds
 Tetris.field = [];
 var game = new Phaser.Game(Tetris.COLUMNS * Tetris.TILE_SIZE,
     Tetris.ROWS * Tetris.TILE_SIZE, Phaser.AUTO, '', {
@@ -197,7 +197,8 @@ function create() {
     var downKey = game.input.keyboard.addKey(Phaser.Keyboard.DOWN);
     downKey.onDown.add(function() {
         actionQueue.push(function() {
-            processTick();
+            // processTick();
+            counter = Tetris.tickLength + 1;
         });
     });
 }
@@ -205,6 +206,8 @@ function create() {
 var blocks = [];
 
 function update() {
+    for (var i = 0; i < actionQueue.length; i++) actionQueue[i]();
+    actionQueue = [];
     blocks.forEach(function(element) {
         element.destroy();
     });
@@ -220,11 +223,11 @@ function update() {
         for (var fieldCol = 0; fieldCol < Tetris.COLUMNS; fieldCol++)
             if (Tetris.field[fieldRow][fieldCol])
                 blocks.push(game.add.image(fieldCol * Tetris.TILE_SIZE, fieldRow * Tetris.TILE_SIZE, 'block'));
-    for (var i = 0; i < actionQueue.length; i++) actionQueue[i]();
-    actionQueue = [];
 }
 
 function processTick() {
+    actionQueue = [];
+    counter = 0;
     actionQueue.push(function() {
         counter = 0;
         var copy = Tetris.activeTetrad.clone();
@@ -234,8 +237,8 @@ function processTick() {
         else {
             for (var row = 0; row < 4; row++)
                 for (var col = 0; col < 4; col++)
-                    if (Tetris.activeTetrad.x + col < 10)
-                        Tetris.field[row + Tetris.activeTetrad.y][col + Tetris.activeTetrad.x] += Tetris.activeTetrad.matrix[row][col];
+                    if (Tetris.activeTetrad.x + col < 10 && Tetris.activeTetrad.matrix[row][col])
+                        Tetris.field[row + Tetris.activeTetrad.y][col + Tetris.activeTetrad.x] = 1;
             Tetris.activeTetrad = new Tetrad().createRandom();
         }
     });
