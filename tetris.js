@@ -153,7 +153,6 @@ var game = new Phaser.Game(Tetris.COLUMNS * Tetris.TILE_SIZE,
         create: create,
         update: update
     }, true);
-var actionQueue = [];
 var counter = 0; // milliseconds
 
 function preload() {
@@ -170,44 +169,34 @@ function create() {
     Tetris.activeTetrad = new Tetrad().createRandom();
     var leftKey = game.input.keyboard.addKey(Phaser.Keyboard.LEFT);
     leftKey.onDown.add(function() {
-        actionQueue.push(function() {
-            var copy = Tetris.activeTetrad.clone();
-            copy.x -= 1;
-            if (!checkCollision(copy))
-                Tetris.activeTetrad.x -= 1;
-        });
+        var copy = Tetris.activeTetrad.clone();
+        copy.x -= 1;
+        if (!checkCollision(copy))
+            Tetris.activeTetrad.x -= 1;
     });
     var rightKey = game.input.keyboard.addKey(Phaser.Keyboard.RIGHT);
     rightKey.onDown.add(function() {
-        actionQueue.push(function() {
-            var copy = Tetris.activeTetrad.clone();
-            copy.x += 1;
-            if (!checkCollision(copy))
-                Tetris.activeTetrad.x += 1;
-        });
+        var copy = Tetris.activeTetrad.clone();
+        copy.x += 1;
+        if (!checkCollision(copy))
+            Tetris.activeTetrad.x += 1;
     });
     var upKey = game.input.keyboard.addKey(Phaser.Keyboard.UP);
     upKey.onDown.add(function() {
-        actionQueue.push(function() {
-            var copy = Tetris.activeTetrad.clone().rotateRight();
-            if (!checkCollision(copy))
-                Tetris.activeTetrad.rotateRight();
-        });
+        var copy = Tetris.activeTetrad.clone().rotateRight();
+        if (!checkCollision(copy))
+            Tetris.activeTetrad.rotateRight();
     });
     var downKey = game.input.keyboard.addKey(Phaser.Keyboard.DOWN);
     downKey.onDown.add(function() {
-        actionQueue.push(function() {
-            // processTick();
-            counter = Tetris.tickLength + 1;
-        });
+        processTick();
+        // counter = Tetris.tickLength + 1;
     });
 }
 
 var blocks = [];
 
 function update() {
-    for (var i = 0; i < actionQueue.length; i++) actionQueue[i]();
-    actionQueue = [];
     blocks.forEach(function(element) {
         element.destroy();
     });
@@ -226,39 +215,33 @@ function update() {
 }
 
 function processTick() {
-    actionQueue = [];
     counter = 0;
-    actionQueue.push(function() {
-        counter = 0;
-        var copy = Tetris.activeTetrad.clone();
-        copy.y += 1;
-        if (!checkCollision(copy))
-            Tetris.activeTetrad.y += 1;
-        else {
-            for (var row = 0; row < 4; row++)
-                for (var col = 0; col < 4; col++)
-                    if (Tetris.activeTetrad.x + col < 10 && Tetris.activeTetrad.matrix[row][col])
-                        Tetris.field[row + Tetris.activeTetrad.y][col + Tetris.activeTetrad.x] = 1;
-            Tetris.activeTetrad = new Tetrad().createRandom();
-        }
+    var copy = Tetris.activeTetrad.clone();
+    copy.y += 1;
+    if (!checkCollision(copy))
+        Tetris.activeTetrad.y += 1;
+    else {
+        for (var row = 0; row < 4; row++)
+            for (var col = 0; col < 4; col++)
+                if (Tetris.activeTetrad.x + col < 10 && Tetris.activeTetrad.matrix[row][col])
+                    Tetris.field[row + Tetris.activeTetrad.y][col + Tetris.activeTetrad.x] = 1;
+        Tetris.activeTetrad = new Tetrad().createRandom();
+    }
+    var filledRow = [];
+    var emptyRow = [];
+    _(Tetris.COLUMNS).times(function() {
+        filledRow.push(1);
+        emptyRow.push(0);
     });
-    actionQueue.push(function() {
-        var filledRow = [];
-        var emptyRow = [];
-        _(Tetris.COLUMNS).times(function() {
-            filledRow.push(1);
-            emptyRow.push(0);
-        });
-        for (var row = 0; row < Tetris.ROWS; row++) {
-            if (_.isEqual(filledRow, Tetris.field[row])) {
-                Tetris.tickLength -= 1;
-                for (var i = row; i > 0; i--) {
-                    Tetris.field[i] = Tetris.field[i - 1];
-                }
-                Tetris.field[0] = emptyRow;
+    for (var row = 0; row < Tetris.ROWS; row++) {
+        if (_.isEqual(filledRow, Tetris.field[row])) {
+            Tetris.tickLength -= 1;
+            for (var i = row; i > 0; i--) {
+                Tetris.field[i] = Tetris.field[i - 1];
             }
+            Tetris.field[0] = emptyRow;
         }
-    });
+    }
 }
 
 function checkCollision(testTetrad) {
