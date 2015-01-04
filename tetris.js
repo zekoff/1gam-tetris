@@ -10,6 +10,7 @@ Tetris.tickLength = 800; // milliseconds
 Tetris.field = [];
 Tetris.counter = 0; // milliseconds
 Tetris.renderBlocks = [];
+Tetris.actionQueue = [];
 
 var game = new Phaser.Game(Tetris.COLUMNS * Tetris.TILE_SIZE + 4 * Tetris.TILE_SIZE + 5 + 5 + 5,
     Tetris.ROWS * Tetris.TILE_SIZE, Phaser.AUTO, '', {
@@ -38,34 +39,48 @@ function create() {
     Tetris.nextTetrad = new Tetrad().createRandom();
     var leftKey = game.input.keyboard.addKey(Phaser.Keyboard.LEFT);
     leftKey.onDown.add(function() {
-        var copy = Tetris.activeTetrad.clone();
-        copy.x -= 1;
-        if (!checkCollision(copy))
-            Tetris.activeTetrad.x -= 1;
+        Tetris.actionQueue.push(function() {
+            var copy = Tetris.activeTetrad.clone();
+            copy.x -= 1;
+            if (!checkCollision(copy))
+                Tetris.activeTetrad.x -= 1;
+        });
     });
     var rightKey = game.input.keyboard.addKey(Phaser.Keyboard.RIGHT);
     rightKey.onDown.add(function() {
-        var copy = Tetris.activeTetrad.clone();
-        copy.x += 1;
-        if (!checkCollision(copy))
-            Tetris.activeTetrad.x += 1;
+        Tetris.actionQueue.push(function() {
+            var copy = Tetris.activeTetrad.clone();
+            copy.x += 1;
+            if (!checkCollision(copy))
+                Tetris.activeTetrad.x += 1;
+        });
     });
     var upKey = game.input.keyboard.addKey(Phaser.Keyboard.UP);
     upKey.onDown.add(function() {
-        var copy = Tetris.activeTetrad.clone().rotateRight();
-        if (!checkCollision(copy))
-            Tetris.activeTetrad.rotateRight();
+        Tetris.actionQueue.push(function() {
+            var copy = Tetris.activeTetrad.clone().rotateRight();
+            if (!checkCollision(copy))
+                Tetris.activeTetrad.rotateRight();
+        });
     });
     var downKey = game.input.keyboard.addKey(Phaser.Keyboard.DOWN);
     downKey.onDown.add(function() {
-        processTick();
+        Tetris.actionQueue.push(function() {
+            Tetris.counter = Tetris.tickLength + 1;
+        });
     });
 }
 
 function update() {
     Tetris.counter += game.time.elapsed;
     if (Tetris.counter > Tetris.tickLength)
-        processTick();
+        Tetris.actionQueue.push(function() {
+            processTick();
+        });
+    Tetris.actionQueue.forEach(function(action) {
+        action();
+    });
+    Tetris.actionQueue = [];
     render();
 }
 
@@ -107,10 +122,8 @@ function processTick() {
         Tetris.activeTetrad = Tetris.nextTetrad;
         Tetris.nextTetrad = new Tetrad().createRandom();
     }
-    var filledRow = [];
     var emptyRow = [];
     _(Tetris.COLUMNS).times(function() {
-        filledRow.push(1);
         emptyRow.push(0);
     });
     for (var row = 0; row < Tetris.ROWS; row++) {
