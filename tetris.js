@@ -9,8 +9,12 @@ Tetris.TILE_SIZE = 32; // pixels square
 Tetris.tickLength = 800; // milliseconds
 Tetris.field = [];
 Tetris.counter = 0; // milliseconds
+Tetris.flashCounter = 0;
+Tetris.flashImage = null;
+Tetris.gameOverCounter = 0;
 Tetris.renderBlocks = [];
 Tetris.actionQueue = [];
+Tetris.gameState = 0; // 0 = normal, 1 = flashing, 2 = game over
 
 var game = new Phaser.Game(Tetris.COLUMNS * Tetris.TILE_SIZE + 4 * Tetris.TILE_SIZE + 5 + 5 + 5,
     Tetris.ROWS * Tetris.TILE_SIZE, Phaser.AUTO, '', {
@@ -69,18 +73,39 @@ function create() {
             Tetris.counter = Tetris.tickLength + 1;
         });
     });
+    Tetris.flashMask = game.add.bitmapData(game.width, game.height);
+    Tetris.flashMask.fill(0xDD, 0xDD, 0xFF, 0.4);
+    Tetris.gameOverMask = game.add.bitmapData(game.width, game.height);
+    Tetris.gameOverMask.fill(0xFF, 0xBB, 0xBB, 0.6);
 }
 
 function update() {
-    Tetris.counter += game.time.elapsed;
-    if (Tetris.counter > Tetris.tickLength)
-        Tetris.actionQueue.push(function() {
-            processTick();
-        });
-    Tetris.actionQueue.forEach(function(action) {
-        action();
-    });
-    Tetris.actionQueue = [];
+    switch (Tetris.gameState) {
+        case 0:
+            Tetris.counter += game.time.elapsed;
+            if (Tetris.counter > Tetris.tickLength)
+                Tetris.actionQueue.push(function() {
+                    processTick();
+                });
+            Tetris.actionQueue.forEach(function(action) {
+                action();
+            });
+            Tetris.actionQueue = [];
+            break;
+        case 1:
+            Tetris.flashCounter += game.time.elapsed;
+            if (Tetris.flashCounter > 250) {
+                Tetris.gameState = 0;
+                Tetris.flashImage.destroy();
+                Tetris.flashImage = null;
+            }
+            break;
+        case 2:
+            Tetris.gameOverCounter += game.time.elapsed;
+            if (Tetris.gameOverCounter > 2000)
+            ; // TODO: reset game
+            break;
+    }
     render();
 }
 
@@ -121,6 +146,10 @@ function processTick() {
                     Tetris.field[row + Tetris.activeTetrad.y][col + Tetris.activeTetrad.x] = Tetris.activeTetrad.block;
         Tetris.activeTetrad = Tetris.nextTetrad;
         Tetris.nextTetrad = new Tetrad().createRandom();
+        if (checkCollision(Tetris.activeTetrad)) {
+            game.add.image(0, 0, Tetris.gameOverMask);
+            Tetris.gameState = 2;
+        }
     }
     var emptyRow = [];
     _(Tetris.COLUMNS).times(function() {
@@ -135,6 +164,9 @@ function processTick() {
             for (var i = row; i > 0; i--)
                 Tetris.field[i] = _.cloneDeep(Tetris.field[i - 1]);
             Tetris.field[0] = emptyRow;
+            Tetris.gameState = 1;
+            Tetris.flashCounter = 0;
+            if (Tetris.flashImage === null) Tetris.flashImage = game.add.image(0, 0, Tetris.flashMask);
         }
     }
 }
