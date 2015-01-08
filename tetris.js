@@ -94,7 +94,20 @@ function update() {
             break;
         case 1:
             Tetris.flashCounter += game.time.elapsed;
-            if (Tetris.flashCounter > 250) {
+            switch (Math.floor(Tetris.flashCounter / 100)) {
+                case 0:
+                    Tetris.flashImage.tint = 0xFFFFFF;
+                    break;
+                case 1:
+                    Tetris.flashImage.tint = 0x80FF80;
+                    break;
+                case 2:
+                    Tetris.flashImage.tint = 0xFFFFFF;
+                    break;
+                default:
+                    break;
+            }
+            if (Tetris.flashCounter > 300) {
                 Tetris.gameState = 0;
                 Tetris.flashImage.destroy();
                 Tetris.flashImage = null;
