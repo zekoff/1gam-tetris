@@ -65,8 +65,6 @@ function preload() {
             Tetris.counter = Tetris.tickLength + 1;
         });
     });
-    Tetris.flashMask = game.add.bitmapData(game.width, game.height);
-    Tetris.flashMask.fill(0xFF, 0xFF, 0xFF, 0.8);
     Tetris.gameOverMask = game.add.bitmapData(game.width, game.height);
     Tetris.gameOverMask.fill(0xFF, 0xBB, 0xBB, 0.7);
     Tetris.gameboyMask = game.add.bitmapData(game.width, game.height);
@@ -91,8 +89,6 @@ function create() {
     Tetris.activeTetrad = new Tetrad().createRandom();
     Tetris.nextTetrad = new Tetrad().createRandom();
     Tetris.counter = 0; // milliseconds
-    Tetris.flashCounter = 0;
-    Tetris.flashImage = null;
     Tetris.gameOverCounter = 0;
     Tetris.renderBlocks = [];
     Tetris.actionQueue = [];
@@ -122,27 +118,6 @@ function update() {
                 action();
             });
             Tetris.actionQueue = [];
-            break;
-        case 1:
-            Tetris.flashCounter += game.time.elapsed;
-            switch (Math.floor(Tetris.flashCounter / 100)) {
-                case 0:
-                    Tetris.flashImage.tint = 0xFFFFFF;
-                    break;
-                case 1:
-                    Tetris.flashImage.tint = 0x80FF80;
-                    break;
-                case 2:
-                    Tetris.flashImage.tint = 0xFFFFFF;
-                    break;
-                default:
-                    break;
-            }
-            if (Tetris.flashCounter > 300) {
-                Tetris.gameState = 0;
-                Tetris.flashImage.destroy();
-                Tetris.flashImage = null;
-            }
             break;
         case 2:
             Tetris.gameOverCounter += game.time.elapsed;
@@ -230,9 +205,6 @@ function processTick() {
             for (var i = row; i > 0; i--)
                 Tetris.field[i] = _.cloneDeep(Tetris.field[i - 1]);
             Tetris.field[0] = emptyRow;
-            Tetris.gameState = 1;
-            Tetris.flashCounter = 0;
-            if (Tetris.flashImage === null) Tetris.flashImage = game.add.image(0, 0, Tetris.flashMask);
         }
     }
     Tetris.score += linesCompletedThisDrop * linesCompletedThisDrop * 10;
