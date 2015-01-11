@@ -25,26 +25,24 @@ function preload() {
     game.load.image('block4', 'blocks/block4.png');
     game.load.image('block5', 'blocks/block5.png');
     game.load.image('block6', 'blocks/block6.png');
-    var leftKey = game.input.keyboard.addKey(Phaser.Keyboard.LEFT);
-    leftKey.onDown.add(function() {
+    game.load.image('splash', 'splash.png');
+    var moveLeft = function() {
         Tetris.actionQueue.push(function() {
             var copy = Tetris.activeTetrad.clone();
             copy.x -= 1;
             if (!checkCollision(copy))
                 Tetris.activeTetrad.x -= 1;
         });
-    });
-    var rightKey = game.input.keyboard.addKey(Phaser.Keyboard.RIGHT);
-    rightKey.onDown.add(function() {
+    };
+    var moveRight = function() {
         Tetris.actionQueue.push(function() {
             var copy = Tetris.activeTetrad.clone();
             copy.x += 1;
             if (!checkCollision(copy))
                 Tetris.activeTetrad.x += 1;
         });
-    });
-    var upKey = game.input.keyboard.addKey(Phaser.Keyboard.UP);
-    upKey.onDown.add(function() {
+    };
+    var inputRotate = function() {
         Tetris.actionQueue.push(function() {
             var copy = Tetris.activeTetrad.clone().rotateRight();
             if (!checkCollision(copy))
@@ -57,14 +55,21 @@ function preload() {
                 }
             }
         });
-    });
-    var downKey = game.input.keyboard.addKey(Phaser.Keyboard.DOWN);
-    downKey.onDown.add(function() {
+    };
+    var inputDrop = function() {
         Tetris.actionQueue.push(function() {
             Tetris.score++;
             Tetris.counter = Tetris.tickLength + 1;
         });
-    });
+    };
+    var leftKey = game.input.keyboard.addKey(Phaser.Keyboard.LEFT);
+    leftKey.onDown.add(moveLeft);
+    var rightKey = game.input.keyboard.addKey(Phaser.Keyboard.RIGHT);
+    rightKey.onDown.add(moveRight);
+    var upKey = game.input.keyboard.addKey(Phaser.Keyboard.UP);
+    upKey.onDown.add(inputRotate);
+    var downKey = game.input.keyboard.addKey(Phaser.Keyboard.DOWN);
+    downKey.onDown.add(inputDrop);
     Tetris.gameOverMask = game.add.bitmapData(game.width, game.height);
     Tetris.gameOverMask.fill(0xFF, 0xBB, 0xBB, 0.7);
     Tetris.gameboyMask = game.add.bitmapData(game.width, game.height);
@@ -92,7 +97,7 @@ function create() {
     Tetris.gameOverCounter = 0;
     Tetris.renderBlocks = [];
     Tetris.actionQueue = [];
-    Tetris.gameState = 0; // 0 = normal, 1 = flashing, 2 = game over
+    Tetris.gameState = 1; // 0 = normal, 1 = splashscreen, 2 = game over
     Tetris.gameboyImage = game.add.image(0, 0, Tetris.gameboyImage);
     Tetris.linesCompleted = 0;
     Tetris.score = 0;
@@ -104,6 +109,8 @@ function create() {
     Tetris.nextText = game.add.text(0, 0, '', Tetris.textStyle);
     Tetris.scoreText = game.add.text(0, 0, '', Tetris.textStyle);
     Tetris.linesText = game.add.text(0, 0, '', Tetris.textStyle);
+    Tetris.splashImage = game.add.image(0,0,'splash');
+    Tetris.splashCounter = 0;
 }
 
 function update() {
@@ -118,6 +125,13 @@ function update() {
                 action();
             });
             Tetris.actionQueue = [];
+            break;
+        case 1:
+            Tetris.splashImage.destroy();
+            Tetris.splashImage = null;
+            Tetris.splashCounter += game.time.elapsed;
+            if (Tetris.splashCounter > 2000) Tetris.gameState = 0;
+            else Tetris.splashImage = game.add.image(0,0,'splash');
             break;
         case 2:
             Tetris.gameOverCounter += game.time.elapsed;
