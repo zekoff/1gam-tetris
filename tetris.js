@@ -19,12 +19,8 @@ function createGameInstance() {
 var game = createGameInstance();
 
 function preload() {
-    game.load.image('block1', 'blocks/block1.png');
-    game.load.image('block2', 'blocks/block2.png');
-    game.load.image('block3', 'blocks/block3.png');
-    game.load.image('block4', 'blocks/block4.png');
-    game.load.image('block5', 'blocks/block5.png');
-    game.load.image('block6', 'blocks/block6.png');
+    for (var i = 1; i < 7; i++)
+        game.load.image('block' + i, 'blocks/block' + i + '.png');
     game.load.image('splash', 'splash.png');
     var moveLeft = function() {
         Tetris.actionQueue.push(function() {
@@ -62,14 +58,10 @@ function preload() {
             Tetris.counter = Tetris.tickLength + 1;
         });
     };
-    var leftKey = game.input.keyboard.addKey(Phaser.Keyboard.LEFT);
-    leftKey.onDown.add(moveLeft);
-    var rightKey = game.input.keyboard.addKey(Phaser.Keyboard.RIGHT);
-    rightKey.onDown.add(moveRight);
-    var upKey = game.input.keyboard.addKey(Phaser.Keyboard.UP);
-    upKey.onDown.add(inputRotate);
-    var downKey = game.input.keyboard.addKey(Phaser.Keyboard.DOWN);
-    downKey.onDown.add(inputDrop);
+    game.input.keyboard.addKey(Phaser.Keyboard.LEFT).onDown.add(moveLeft);
+    game.input.keyboard.addKey(Phaser.Keyboard.RIGHT).onDown.add(moveRight);
+    game.input.keyboard.addKey(Phaser.Keyboard.UP).onDown.add(inputRotate);
+    game.input.keyboard.addKey(Phaser.Keyboard.DOWN).onDown.add(inputDrop);
     Tetris.gameOverMask = game.add.bitmapData(game.width, game.height);
     Tetris.gameOverMask.fill(0xFF, 0xBB, 0xBB, 0.7);
     Tetris.gameboyMask = game.add.bitmapData(game.width, game.height);
@@ -109,7 +101,7 @@ function create() {
     Tetris.nextText = game.add.text(0, 0, '', Tetris.textStyle);
     Tetris.scoreText = game.add.text(0, 0, '', Tetris.textStyle);
     Tetris.linesText = game.add.text(0, 0, '', Tetris.textStyle);
-    Tetris.splashImage = game.add.image(0,0,'splash');
+    Tetris.splashImage = game.add.image(0, 0, 'splash');
     Tetris.splashCounter = 0;
 }
 
@@ -131,7 +123,7 @@ function update() {
             Tetris.splashImage = null;
             Tetris.splashCounter += game.time.elapsed;
             if (Tetris.splashCounter > 2000) Tetris.gameState = 0;
-            else Tetris.splashImage = game.add.image(0,0,'splash');
+            else Tetris.splashImage = game.add.image(0, 0, 'splash');
             break;
         case 2:
             Tetris.gameOverCounter += game.time.elapsed;
@@ -147,13 +139,9 @@ function update() {
 
 function render() {
     Tetris.nextText.destroy();
-    Tetris.nextText = null;
     Tetris.linesText.destroy();
-    Tetris.linesText = null;
     Tetris.scoreText.destroy();
-    Tetris.scoreText = null;
     Tetris.gameboyImage.destroy();
-    Tetris.gameboyImage = null;
     Tetris.renderBlocks.forEach(function(element) {
         element.destroy();
     });
@@ -197,7 +185,13 @@ function processTick() {
                 if (Tetris.activeTetrad.x + col < 10 && Tetris.activeTetrad.matrix[row][col])
                     Tetris.field[row + Tetris.activeTetrad.y][col + Tetris.activeTetrad.x] = Tetris.activeTetrad.block;
         Tetris.activeTetrad = Tetris.nextTetrad;
+        Tetris.activeTetrad.x = _.random(Tetris.COLUMNS);
+        while (checkCollision(Tetris.activeTetrad))
+            Tetris.activeTetrad.x = _.random(Tetris.COLUMNS);
         Tetris.nextTetrad = new Tetrad().createRandom();
+        _(_.random(3)).times(function() {
+            Tetris.activeTetrad.rotateRight();
+        });
         if (checkCollision(Tetris.activeTetrad)) {
             game.add.image(0, 0, Tetris.gameOverMask);
             Tetris.gameState = 2;
