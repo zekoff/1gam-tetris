@@ -58,9 +58,11 @@ function preload() {
         });
     });
     Tetris.flashMask = game.add.bitmapData(game.width, game.height);
-    Tetris.flashMask.fill(0xDD, 0xDD, 0xFF, 0.4);
+    Tetris.flashMask.fill(0xFF, 0xFF, 0xFF, 0.8);
     Tetris.gameOverMask = game.add.bitmapData(game.width, game.height);
-    Tetris.gameOverMask.fill(0xFF, 0xBB, 0xBB, 0.6);
+    Tetris.gameOverMask.fill(0xFF, 0xBB, 0xBB, 0.7);
+    Tetris.gameboyMask = game.add.bitmapData(game.width, game.height);
+    Tetris.gameboyMask.fill(0x70, 0xCC, 0x70, 0.3);
 }
 
 function create() {
@@ -81,6 +83,7 @@ function create() {
     Tetris.renderBlocks = [];
     Tetris.actionQueue = [];
     Tetris.gameState = 0; // 0 = normal, 1 = flashing, 2 = game over
+    Tetris.gameboyImage = game.add.image(0, 0, Tetris.gameboyImage);
 }
 
 function update() {
@@ -130,6 +133,8 @@ function update() {
 }
 
 function render() {
+    Tetris.gameboyImage.destroy();
+    Tetris.gameboyImage = null;
     Tetris.renderBlocks.forEach(function(element) {
         element.destroy();
     });
@@ -151,6 +156,7 @@ function render() {
         e.scale.x = 4;
         e.scale.y = 4;
     });
+    Tetris.gameboyImage = game.add.image(0, 0, Tetris.gameboyMask);
 }
 
 function processTick() {
