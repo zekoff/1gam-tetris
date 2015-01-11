@@ -218,9 +218,9 @@ function processTick() {
     _(Tetris.COLUMNS).times(function() {
         emptyRow.push(0);
     });
+    var linesCompletedThisDrop = 0;
     for (var row = 0; row < Tetris.ROWS; row++) {
         var allFilled = true;
-        var linesCompletedThisDrop = 0;
         for (var f = 0; f < Tetris.COLUMNS; f++)
             if (!Tetris.field[row][f]) allFilled = false;
         if (allFilled) {
@@ -234,8 +234,8 @@ function processTick() {
             Tetris.flashCounter = 0;
             if (Tetris.flashImage === null) Tetris.flashImage = game.add.image(0, 0, Tetris.flashMask);
         }
-        Tetris.score += linesCompletedThisDrop * linesCompletedThisDrop * 10;
     }
+    Tetris.score += linesCompletedThisDrop * linesCompletedThisDrop * 10;
 }
 
 function checkCollision(testTetrad) {
