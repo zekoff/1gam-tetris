@@ -54,6 +54,7 @@ function preload() {
     var downKey = game.input.keyboard.addKey(Phaser.Keyboard.DOWN);
     downKey.onDown.add(function() {
         Tetris.actionQueue.push(function() {
+            Tetris.score++;
             Tetris.counter = Tetris.tickLength + 1;
         });
     });
@@ -63,6 +64,12 @@ function preload() {
     Tetris.gameOverMask.fill(0xFF, 0xBB, 0xBB, 0.7);
     Tetris.gameboyMask = game.add.bitmapData(game.width, game.height);
     Tetris.gameboyMask.fill(0x70, 0xCC, 0x70, 0.3);
+    Tetris.GUTTER_WIDTH = 5;
+    Tetris.gutterTexture = game.add.bitmapData(Tetris.GUTTER_WIDTH, game.height);
+    Tetris.gutterTexture.fill(0, 0, 0, 1);
+    game.add.image(0, 0, Tetris.gutterTexture);
+    game.add.image(Tetris.TILE_SIZE * Tetris.COLUMNS + Tetris.GUTTER_WIDTH, 0, Tetris.gutterTexture);
+
 }
 
 function create() {
@@ -84,6 +91,11 @@ function create() {
     Tetris.actionQueue = [];
     Tetris.gameState = 0; // 0 = normal, 1 = flashing, 2 = game over
     Tetris.gameboyImage = game.add.image(0, 0, Tetris.gameboyImage);
+    Tetris.linesCompleted = 0;
+    Tetris.score = 0;
+    Tetris.textStyle = {'font':'20px monospace', 'fill':'#000000', 'align':'center'};
+    Tetris.scoreText = game.add.text(0,0,'',Tetris.textStyle);
+    Tetris.linesText = game.add.text(0,0,'',Tetris.textStyle);
 }
 
 function update() {
@@ -133,6 +145,8 @@ function update() {
 }
 
 function render() {
+    Tetris.linesText.destroy();
+    Tetris.scoreText.destroy();
     Tetris.gameboyImage.destroy();
     Tetris.gameboyImage = null;
     Tetris.renderBlocks.forEach(function(element) {
@@ -142,20 +156,27 @@ function render() {
     for (var row = 0; row < 4; row++)
         for (var col = 0; col < 4; col++)
             if (Tetris.activeTetrad.matrix[row][col])
-                Tetris.renderBlocks.push(game.add.image((col + Tetris.activeTetrad.x) * Tetris.TILE_SIZE + 5, (row + Tetris.activeTetrad.y) * Tetris.TILE_SIZE, Tetris.activeTetrad.block));
+                Tetris.renderBlocks.push(game.add.image((col + Tetris.activeTetrad.x) * Tetris.TILE_SIZE + Tetris.GUTTER_WIDTH, (row + Tetris.activeTetrad.y) * Tetris.TILE_SIZE, Tetris.activeTetrad.block));
     for (var fieldRow = 0; fieldRow < Tetris.ROWS; fieldRow++)
         for (var fieldCol = 0; fieldCol < Tetris.COLUMNS; fieldCol++)
             if (Tetris.field[fieldRow][fieldCol])
-                Tetris.renderBlocks.push(game.add.image(fieldCol * Tetris.TILE_SIZE + 5, fieldRow * Tetris.TILE_SIZE, Tetris.field[fieldRow][fieldCol]));
-    var offset = Tetris.COLUMNS * Tetris.TILE_SIZE + 15;
+                Tetris.renderBlocks.push(game.add.image(fieldCol * Tetris.TILE_SIZE + Tetris.GUTTER_WIDTH, fieldRow * Tetris.TILE_SIZE, Tetris.field[fieldRow][fieldCol]));
+    var offset = Tetris.COLUMNS * Tetris.TILE_SIZE + Tetris.GUTTER_WIDTH * 2 + 5;
     for (var nextRow = 0; nextRow < 4; nextRow++)
         for (var nextCol = 0; nextCol < 4; nextCol++)
             if (Tetris.nextTetrad.matrix[nextRow][nextCol])
-                Tetris.renderBlocks.push(game.add.image(offset + Tetris.TILE_SIZE * nextCol, Tetris.TILE_SIZE * nextRow + 5, Tetris.nextTetrad.block));
+                Tetris.renderBlocks.push(game.add.image(offset + Tetris.TILE_SIZE * nextCol, Tetris.TILE_SIZE * nextRow + 50, Tetris.nextTetrad.block));
     Tetris.renderBlocks.forEach(function(e) {
         e.scale.x = 4;
         e.scale.y = 4;
     });
+    var textCenter = (game.width - offset) / 2 + offset;
+    Tetris.nextText = game.add.text(textCenter, 50, "Next:", Tetris.textStyle);
+    Tetris.nextText.anchor.set(0.5);
+    Tetris.linesText = game.add.text(textCenter, 300, "Lines\ncomplete:\n" + Tetris.linesCompleted, Tetris.textStyle);
+    Tetris.linesText.anchor.set(0.5);
+    Tetris.scoreText = game.add.text(textCenter, 450, "Score:\n" + Tetris.score, Tetris.textStyle);
+    Tetris.scoreText.anchor.set(0.5);
     Tetris.gameboyImage = game.add.image(0, 0, Tetris.gameboyMask);
 }
 
@@ -183,10 +204,13 @@ function processTick() {
     });
     for (var row = 0; row < Tetris.ROWS; row++) {
         var allFilled = true;
+        var linesCompletedThisDrop = 0;
         for (var f = 0; f < Tetris.COLUMNS; f++)
             if (!Tetris.field[row][f]) allFilled = false;
         if (allFilled) {
-            Tetris.tickLength -= 1;
+            linesCompletedThisDrop++;
+            Tetris.linesCompleted++;
+            Tetris.tickLength--;
             for (var i = row; i > 0; i--)
                 Tetris.field[i] = _.cloneDeep(Tetris.field[i - 1]);
             Tetris.field[0] = emptyRow;
@@ -194,6 +218,7 @@ function processTick() {
             Tetris.flashCounter = 0;
             if (Tetris.flashImage === null) Tetris.flashImage = game.add.image(0, 0, Tetris.flashMask);
         }
+        Tetris.score += linesCompletedThisDrop * linesCompletedThisDrop * 10;
     }
 }
 
