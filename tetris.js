@@ -49,6 +49,13 @@ function preload() {
             var copy = Tetris.activeTetrad.clone().rotateRight();
             if (!checkCollision(copy))
                 Tetris.activeTetrad.rotateRight();
+            else {
+                copy.x--;
+                if (!checkCollision(copy)) {
+                    Tetris.activeTetrad.x--;
+                    Tetris.activeTetrad.rotateRight();
+                }
+            }
         });
     });
     var downKey = game.input.keyboard.addKey(Phaser.Keyboard.DOWN);
@@ -93,10 +100,14 @@ function create() {
     Tetris.gameboyImage = game.add.image(0, 0, Tetris.gameboyImage);
     Tetris.linesCompleted = 0;
     Tetris.score = 0;
-    Tetris.textStyle = {'font':'20px monospace', 'fill':'#000000', 'align':'center'};
-    Tetris.nextText = game.add.text(0,0,'',Tetris.textStyle);
-    Tetris.scoreText = game.add.text(0,0,'',Tetris.textStyle);
-    Tetris.linesText = game.add.text(0,0,'',Tetris.textStyle);
+    Tetris.textStyle = {
+        'font': '20px monospace',
+        'fill': '#000000',
+        'align': 'center'
+    };
+    Tetris.nextText = game.add.text(0, 0, '', Tetris.textStyle);
+    Tetris.scoreText = game.add.text(0, 0, '', Tetris.textStyle);
+    Tetris.linesText = game.add.text(0, 0, '', Tetris.textStyle);
 }
 
 function update() {
