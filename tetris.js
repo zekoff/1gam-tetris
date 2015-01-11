@@ -94,6 +94,7 @@ function create() {
     Tetris.linesCompleted = 0;
     Tetris.score = 0;
     Tetris.textStyle = {'font':'20px monospace', 'fill':'#000000', 'align':'center'};
+    Tetris.nextText = game.add.text(0,0,'',Tetris.textStyle);
     Tetris.scoreText = game.add.text(0,0,'',Tetris.textStyle);
     Tetris.linesText = game.add.text(0,0,'',Tetris.textStyle);
 }
@@ -145,8 +146,12 @@ function update() {
 }
 
 function render() {
+    Tetris.nextText.destroy();
+    Tetris.nextText = null;
     Tetris.linesText.destroy();
+    Tetris.linesText = null;
     Tetris.scoreText.destroy();
+    Tetris.scoreText = null;
     Tetris.gameboyImage.destroy();
     Tetris.gameboyImage = null;
     Tetris.renderBlocks.forEach(function(element) {
@@ -165,13 +170,13 @@ function render() {
     for (var nextRow = 0; nextRow < 4; nextRow++)
         for (var nextCol = 0; nextCol < 4; nextCol++)
             if (Tetris.nextTetrad.matrix[nextRow][nextCol])
-                Tetris.renderBlocks.push(game.add.image(offset + Tetris.TILE_SIZE * nextCol, Tetris.TILE_SIZE * nextRow + 50, Tetris.nextTetrad.block));
+                Tetris.renderBlocks.push(game.add.image(offset + Tetris.TILE_SIZE * (nextCol + 1) - 5, Tetris.TILE_SIZE * nextRow + 50, Tetris.nextTetrad.block));
     Tetris.renderBlocks.forEach(function(e) {
         e.scale.x = 4;
         e.scale.y = 4;
     });
     var textCenter = (game.width - offset) / 2 + offset;
-    Tetris.nextText = game.add.text(textCenter, 50, "Next:", Tetris.textStyle);
+    Tetris.nextText = game.add.text(textCenter, 20, "Next:", Tetris.textStyle);
     Tetris.nextText.anchor.set(0.5);
     Tetris.linesText = game.add.text(textCenter, 300, "Lines\ncomplete:\n" + Tetris.linesCompleted, Tetris.textStyle);
     Tetris.linesText.anchor.set(0.5);
