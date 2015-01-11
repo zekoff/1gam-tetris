@@ -6,22 +6,17 @@ var Tetrad = Tetris.Tetrad;
 Tetris.COLUMNS = 10;
 Tetris.ROWS = 18;
 Tetris.TILE_SIZE = 32; // pixels square
-Tetris.tickLength = 800; // milliseconds
-Tetris.field = [];
-Tetris.counter = 0; // milliseconds
-Tetris.flashCounter = 0;
-Tetris.flashImage = null;
-Tetris.gameOverCounter = 0;
-Tetris.renderBlocks = [];
-Tetris.actionQueue = [];
-Tetris.gameState = 0; // 0 = normal, 1 = flashing, 2 = game over
 
-var game = new Phaser.Game(Tetris.COLUMNS * Tetris.TILE_SIZE + 4 * Tetris.TILE_SIZE + 5 + 5 + 5,
-    Tetris.ROWS * Tetris.TILE_SIZE, Phaser.AUTO, '', {
-        preload: preload,
-        create: create,
-        update: update
-    }, true, false);
+function createGameInstance() {
+    return new Phaser.Game(Tetris.COLUMNS * Tetris.TILE_SIZE + 4 * Tetris.TILE_SIZE + 5 + 5 + 5,
+        Tetris.ROWS * Tetris.TILE_SIZE, Phaser.AUTO, '', {
+            preload: preload,
+            create: create,
+            update: update
+        }, true, false);
+}
+
+var game = createGameInstance();
 
 function preload() {
     game.load.image('block1', 'blocks/block1.png');
@@ -30,17 +25,6 @@ function preload() {
     game.load.image('block4', 'blocks/block4.png');
     game.load.image('block5', 'blocks/block5.png');
     game.load.image('block6', 'blocks/block6.png');
-}
-
-function create() {
-    for (var i = 0; i < Tetris.ROWS; i++) {
-        var row = [];
-        for (var j = 0; j < Tetris.COLUMNS; j++)
-            row.push(0);
-        Tetris.field.push(row);
-    }
-    Tetris.activeTetrad = new Tetrad().createRandom();
-    Tetris.nextTetrad = new Tetrad().createRandom();
     var leftKey = game.input.keyboard.addKey(Phaser.Keyboard.LEFT);
     leftKey.onDown.add(function() {
         Tetris.actionQueue.push(function() {
@@ -79,6 +63,26 @@ function create() {
     Tetris.gameOverMask.fill(0xFF, 0xBB, 0xBB, 0.6);
 }
 
+function create() {
+    Tetris.field = [];
+    for (var i = 0; i < Tetris.ROWS; i++) {
+        var row = [];
+        for (var j = 0; j < Tetris.COLUMNS; j++)
+            row.push(0);
+        Tetris.field.push(row);
+    }
+    Tetris.tickLength = 800; // milliseconds
+    Tetris.activeTetrad = new Tetrad().createRandom();
+    Tetris.nextTetrad = new Tetrad().createRandom();
+    Tetris.counter = 0; // milliseconds
+    Tetris.flashCounter = 0;
+    Tetris.flashImage = null;
+    Tetris.gameOverCounter = 0;
+    Tetris.renderBlocks = [];
+    Tetris.actionQueue = [];
+    Tetris.gameState = 0; // 0 = normal, 1 = flashing, 2 = game over
+}
+
 function update() {
     switch (Tetris.gameState) {
         case 0:
@@ -115,8 +119,11 @@ function update() {
             break;
         case 2:
             Tetris.gameOverCounter += game.time.elapsed;
-            if (Tetris.gameOverCounter > 2000)
-            ; // TODO: reset game
+            if (Tetris.gameOverCounter > 2000) {
+                game.destroy();
+                game = null;
+                game = createGameInstance();
+            }
             break;
     }
     render();
