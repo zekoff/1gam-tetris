@@ -185,13 +185,13 @@ function processTick() {
                 if (Tetris.activeTetrad.x + col < 10 && Tetris.activeTetrad.matrix[row][col])
                     Tetris.field[row + Tetris.activeTetrad.y][col + Tetris.activeTetrad.x] = Tetris.activeTetrad.block;
         Tetris.activeTetrad = Tetris.nextTetrad;
+        _(_.random(3)).times(function() {
+            Tetris.activeTetrad.rotateRight();
+        });
         Tetris.activeTetrad.x = _.random(Tetris.COLUMNS);
         while (checkCollision(Tetris.activeTetrad))
             Tetris.activeTetrad.x = _.random(Tetris.COLUMNS);
         Tetris.nextTetrad = new Tetrad().createRandom();
-        _(_.random(3)).times(function() {
-            Tetris.activeTetrad.rotateRight();
-        });
         if (checkCollision(Tetris.activeTetrad)) {
             game.add.image(0, 0, Tetris.gameOverMask);
             Tetris.gameState = 2;
